@@ -1,0 +1,338 @@
+{
+  "servers": [
+    {
+      "id": "3",
+      "name": "Serwer3",
+      "description": "Serwer dla aplikacji testowych",
+      "date": "2025-03-19"
+    },
+    {
+      "id": "4",
+      "name": "Serwer4",
+      "description": "Serwer produkcyjny",
+      "type": "server",
+      "date": "19-09-2023"
+    },
+    {
+      "id": "5",
+      "name": "Serwer5",
+      "description": "Serwer zapasowy",
+      "type": "server",
+      "date": "20-09-2023"
+    },
+    {
+      "id": "6",
+      "name": "Serwer6",
+      "description": "Serwer do przechowywania danych",
+      "type": "server",
+      "date": "21-09-2023"
+    },
+    {
+      "id": "7",
+      "name": "Serwer7",
+      "description": "Serwer testowy dla aplikacji mobilnych",
+      "type": "server",
+      "date": "22-09-2023"
+    },
+    {
+      "id": "8",
+      "name": "Serwer8",
+      "description": "Serwer do przechowywania kopii zapasowych",
+      "type": "server",
+      "date": "23-09-2023"
+    },
+    {
+      "id": "9",
+      "name": "Serwer9",
+      "description": "Serwer testowy dla nowych funkcji",
+      "type": "server",
+      "date": "24-09-2023"
+    },
+    {
+      "id": "10",
+      "name": "Serwer10",
+      "description": "Serwer analityczny",
+      "type": "server",
+      "date": "25-09-2023"
+    },
+    {
+      "id": "11",
+      "name": "Serwer11",
+      "description": "Serwer dla API",
+      "type": "server",
+      "date": "26-09-2023"
+    },
+    {
+      "id": "12",
+      "name": "Serwer122",
+      "description": "Serwer dla systemu CRM",
+      "date": "27-09-2023"
+    },
+    {
+      "id": "13",
+      "name": "Serwer13",
+      "description": "Serwer do przetwarzania AI",
+      "type": "server",
+      "date": "28-09-2023"
+    }
+  ],
+  "apps": [
+    {
+      "id": "1",
+      "name": "Aplikacja1",
+      "description": "Aplikacja1 is a task management tool designed for project tracking.",
+      "type": "app",
+      "serverId": 1,
+      "date": "15-09-2023"
+    },
+    {
+      "id": "2",
+      "name": "Aplikacja2",
+      "description": "Aplikacja2 helps with team collaboration and real-time communication.",
+      "type": "app",
+      "serverId": 2,
+      "date": "17-09-2023"
+    },
+    {
+      "id": "3",
+      "name": "Aplikacja3",
+      "description": "Aplikacja3 provides an automated workflow to streamline tasks and processes.",
+      "type": "app",
+      "serverId": 3,
+      "date": "18-09-2023"
+    },
+    {
+      "id": "4",
+      "name": "Aplikacja4",
+      "description": "Aplikacja4 is an analytics tool for tracking business performance metrics.",
+      "type": "app",
+      "serverId": 4,
+      "date": "19-09-2023"
+    },
+    {
+      "id": "5",
+      "name": "Aplikacja5",
+      "description": "Aplikacja5 provides cloud storage solutions for secure data management.",
+      "type": "app",
+      "serverId": 5,
+      "date": "20-09-2023"
+    },
+    {
+      "id": "6",
+      "name": "Aplikacja6",
+      "description": "Aplikacja6 helps track financial transactions and monitor budgets.",
+      "type": "app",
+      "serverId": 6,
+      "date": "21-09-2023"
+    },
+    {
+      "id": "7",
+      "name": "Aplikacja7",
+      "description": "Aplikacja7 is a mobile app designed for social networking and content sharing.",
+      "type": "app",
+      "serverId": 7,
+      "date": "22-09-2023"
+    },
+    {
+      "id": "8",
+      "name": "Aplikacja8",
+      "description": "Aplikacja8 is an e-commerce platform enabling businesses to sell products online.",
+      "type": "app",
+      "serverId": 8,
+      "date": "23-09-2023"
+    },
+    {
+      "id": "9",
+      "name": "Aplikacja9",
+      "description": "Aplikacja9 is a learning management system for online courses and education.",
+      "type": "app",
+      "serverId": 9,
+      "date": "24-09-2023"
+    },
+    {
+      "id": "10",
+      "name": "Aplikacja10",
+      "description": "Aplikacja10 offers a customer support platform for handling inquiries and issues.",
+      "type": "app",
+      "serverId": 10,
+      "date": "25-09-2023"
+    },
+    {
+      "id": "11",
+      "name": "Aplikacja11",
+      "description": "Aplikacja11 is a marketing automation tool to schedule and manage campaigns.",
+      "type": "app",
+      "serverId": 11,
+      "date": "26-09-2023"
+    },
+    {
+      "id": "12",
+      "name": "Aplikacja12",
+      "description": "Aplikacja12 is a task tracking and time management application for professionals.",
+      "type": "app",
+      "serverId": 12,
+      "date": "27-09-2023"
+    },
+    {
+      "id": "13",
+      "name": "Aplikacja13",
+      "description": "Aplikacja13 is a fitness and health tracking app to monitor physical progress.",
+      "type": "app",
+      "serverId": 13,
+      "date": "28-09-2023"
+    },
+    {
+      "id": "14",
+      "name": "Aplikacja14",
+      "description": "Aplikacja14 is a video editing app that enables users to create professional-quality content.",
+      "type": "app",
+      "serverId": 14,
+      "date": "29-09-2023"
+    },
+    {
+      "id": "15",
+      "name": "Aplikacja15",
+      "description": "Aplikacja15 is a real-time messaging app designed for businesses and teams.",
+      "type": "app",
+      "serverId": 15,
+      "date": "30-09-2023"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "1",
+      "name": "Task 1",
+      "description": "Task 1 podpięty do S1 i A1.",
+      "type": "task",
+      "serverId": 1,
+      "appId": 1,
+      "date": "18-09-2023"
+    },
+    {
+      "id": "2",
+      "name": "Task 2",
+      "description": "Task 2 podpięty do S2 i A2.",
+      "type": "task",
+      "serverId": 2,
+      "appId": 2,
+      "date": "19-09-2023"
+    },
+    {
+      "id": "3",
+      "name": "Task 3",
+      "description": "Task 3 podpięty do S3 i A3.",
+      "type": "task",
+      "serverId": 3,
+      "appId": 3,
+      "date": "20-09-2023"
+    },
+    {
+      "id": "4",
+      "name": "Task 4",
+      "description": "Task 4 podpięty do S4 i A4.",
+      "type": "task",
+      "serverId": 4,
+      "appId": 4,
+      "date": "21-09-2023"
+    },
+    {
+      "id": "5",
+      "name": "Task 5",
+      "description": "Task 5 podpięty do S5 i A5.",
+      "type": "task",
+      "serverId": 5,
+      "appId": 5,
+      "date": "22-09-2023"
+    },
+    {
+      "id": "6",
+      "name": "Task 6",
+      "description": "Task 6 podpięty do S6 i A6.",
+      "type": "task",
+      "serverId": 6,
+      "appId": 6,
+      "date": "23-09-2023"
+    },
+    {
+      "id": "7",
+      "name": "Task 7",
+      "description": "Task 7 podpięty do S7 i A7.",
+      "type": "task",
+      "serverId": 7,
+      "appId": 7,
+      "date": "24-09-2023"
+    },
+    {
+      "id": "8",
+      "name": "Task 8",
+      "description": "Task 8 podpięty do S8 i A8.",
+      "type": "task",
+      "serverId": 8,
+      "appId": 8,
+      "date": "25-09-2023"
+    },
+    {
+      "id": "9",
+      "name": "Task 9",
+      "description": "Task 9 podpięty do S9 i A9.",
+      "type": "task",
+      "serverId": 9,
+      "appId": 9,
+      "date": "26-09-2023"
+    },
+    {
+      "id": "10",
+      "name": "Task 10",
+      "description": "Task 10 podpięty do S10 i A10.",
+      "type": "task",
+      "serverId": 10,
+      "appId": 10,
+      "date": "27-09-2023"
+    },
+    {
+      "id": "11",
+      "name": "Task 11",
+      "description": "Task 11 podpięty do S11 i A11.",
+      "type": "task",
+      "serverId": 11,
+      "appId": 11,
+      "date": "28-09-2023"
+    },
+    {
+      "id": "12",
+      "name": "Task 12",
+      "description": "Task 12 podpięty do S12 i A12.",
+      "type": "task",
+      "serverId": 12,
+      "appId": 12,
+      "date": "29-09-2023"
+    },
+    {
+      "id": "13",
+      "name": "Task 13",
+      "description": "Task 13 podpięty do S13 i A13.",
+      "type": "task",
+      "serverId": 13,
+      "appId": 13,
+      "date": "30-09-2023"
+    },
+    {
+      "id": "14",
+      "name": "Task 14",
+      "description": "Task 14 podpięty do S14 i A14.",
+      "type": "task",
+      "serverId": 14,
+      "appId": 14,
+      "date": "01-10-2023"
+    },
+    {
+      "id": "15",
+      "name": "Task 15",
+      "description": "Task 15 podpięty do S15 i A15.",
+      "type": "task",
+      "serverId": 15,
+      "appId": 15,
+      "date": "02-10-2023"
+    }
+  ]
+}
