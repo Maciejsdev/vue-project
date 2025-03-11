@@ -98,7 +98,7 @@ const fields = computed(() => {
       ];
     case "tasks":
       return [
-        { name: "title", label: "Task Title*", type: "text", required: true },
+        { name: "name", label: "Task Title*", type: "text", required: true },
         { name: "description", label: "Description", type: "textarea" },
         {
           name: "status",

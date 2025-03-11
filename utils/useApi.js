@@ -14,7 +14,6 @@ export function useApi(resource) {
       const response = await $fetch(`${baseUrl}/${resource}`);
       data.value = [...response.map(({ type, ...rest }) => rest)];
       pending.value = false;
-      console.log("Refreshed data:", data.value);
     } catch (err) {
       error.value = err;
       console.error(`Error fetching ${resource}:`, err);
@@ -56,5 +55,19 @@ export function useApi(resource) {
     }
   };
 
-  return { data, pending, error, refresh, deleteItem, editItem };
+  const createItem = async (payload) => {
+    try {
+      await $fetch(`${baseUrl}/${resource}`, {
+        method: "POST",
+        body: payload,
+      });
+
+      toast.success("Successfully created!", { autoClose: 1000 });
+      await refresh();
+    } catch (error) {
+      toast.error(`Error creating ${resource}: ${error}`);
+    }
+  };
+
+  return { data, pending, error, refresh, deleteItem, editItem, createItem };
 }
