@@ -76,7 +76,6 @@ const trimTimestamp = (timestamp) => {
 };
 // Fetch Data
 const refresh = async () => {
-  pending.value = true;
   await fetchData({
     route: "servers",
     search,
@@ -139,7 +138,6 @@ const getListDebounced = debounce(refresh, 300);
 watch(
   [search, options],
   () => {
-    console.log("work");
     getListDebounced();
   },
   { deep: true }

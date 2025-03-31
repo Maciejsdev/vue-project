@@ -42,7 +42,12 @@
         </template>
         <template v-slot:[`item.actions`]="{ item }">
           <div class="d-flex flex-row">
-            <EditDialog type="apps" :data="item" @saved="refresh" />
+            <EditDialog
+              type="apps"
+              :data="item"
+              :serversData="serversData"
+              @saved="refresh"
+            />
             <v-btn
               @click="handleDelete(item.serverId, item.id)"
               variant="plain"
@@ -70,13 +75,21 @@ const options = ref({
   page: 1,
   pageSize: 5,
 });
+const serverOptions = ref({
+  page: 1,
+  pageSize: 100,
+});
 const totalItemsCount = ref(0);
 const totalPages = ref(0);
 const serversData = ref([]);
 
-// Fetch Data
+// Trim timestamps
+const trimTimestamp = (timestamp) => {
+  return timestamp.slice(0, 19).replace("T", " ");
+};
+
+// Fetch data for both apps and servers with pagination
 const refresh = async () => {
-  pending.value = true;
   await fetchData({
     route: "apps",
     search,
@@ -95,10 +108,13 @@ const refresh = async () => {
   await fetchData({
     route: "servers",
     search: ref(""),
-    options: ref({ page: 1, pageSize: 100 }),
+    options: serverOptions,
     setData: (items) => {
       serversData.value = items;
     },
+  }).catch(() => {
+    toast.error("Error fetching servers");
+    pending.value = false;
   });
 };
 
@@ -123,11 +139,11 @@ const updateItemsPerPage = (itemsPerPage) => {
   options.value.pageSize = itemsPerPage;
   refresh();
 };
+
 const updatePage = (page) => {
   options.value.page = page;
 };
 
-// Debounce function
 function debounce(fn, delay) {
   let timeoutID;
   return function (...args) {
@@ -142,7 +158,6 @@ function debounce(fn, delay) {
 
 const getListDebounced = debounce(refresh, 300);
 
-// Watch changes in search & pagination
 watch(
   [search, options],
   () => {

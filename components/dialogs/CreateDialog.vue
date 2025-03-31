@@ -84,6 +84,7 @@ import { apiCall } from "../../utils/api.js";
 const props = defineProps({
   type: { type: String, required: true },
   serversData: { type: Array, required: false, default: () => [] },
+  appsData: { type: Array, required: false, default: () => [] },
 });
 
 const dialog = ref(false);
@@ -178,7 +179,7 @@ const handleCreateNewItem = async (newItem) => {
         endpoint = `server/${newItem.serverId}/apps`;
         break;
       case "tasks":
-        endpoint = "apps/tasks";
+        endpoint = `apps/${newItem.appId}/tasks`;
         break;
       default:
         throw new Error("Unknown type");

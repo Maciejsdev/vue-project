@@ -112,7 +112,6 @@ const fields = computed(() => {
         { name: "name", label: "Task Title*", type: "text", required: true },
         { name: "description", label: "Description", type: "textarea" },
         { name: "appId", label: "App", type: "select" },
-        { name: "serverId", label: "Server", type: "select" },
       ];
     default:
       return [];
@@ -131,40 +130,35 @@ const trimmedFields = computed(() => {
 
 const saveChanges = async () => {
   try {
-    // Determine the endpoint dynamically based on the type
     let endpoint = "";
     const dataToSend = {
       name: trimmedFields.value.name,
       description: trimmedFields.value.description,
-      // Include any other necessary fields
     };
 
     switch (props.type) {
       case "servers":
-        endpoint = `servers/${editedItem.value.id}`; // Endpoint for updating a server
+        endpoint = `servers/${editedItem.value.id}`;
         break;
 
       case "apps":
         if (!editedItem.value.serverId) {
           throw new Error("Server ID is required to update the app.");
         }
-        endpoint = `server/${editedItem.value.serverId}/apps/${editedItem.value.id}`; // Dynamic endpoint for apps
+        endpoint = `server/${editedItem.value.serverId}/apps/${editedItem.value.id}`;
         break;
 
       case "tasks":
-        if (!editedItem.value.appId || !editedItem.value.serverId) {
-          throw new Error(
-            "App ID and Server ID are required to update the task."
-          );
+        if (!editedItem.value.appId) {
+          throw new Error("App ID is required to update the task.");
         }
-        endpoint = `apps/${editedItem.value.appId}/tasks/${editedItem.value.id}`; // Dynamic endpoint for tasks
+        endpoint = `apps/${editedItem.value.appId}/tasks/${editedItem.value.id}`;
         break;
 
       default:
         throw new Error("Unknown type for update.");
     }
 
-    // Make the API call using apiCall from api.js
     await apiCall({
       route: endpoint,
       method: "PATCH",

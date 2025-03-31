@@ -5,7 +5,7 @@
       <v-card-title class="d-flex justify-space-between align-center">
         <span>Tasks</span>
         <div class="d-flex flex-row align-center">
-          <CreateDialog type="tasks" @saved="refresh" />
+          <CreateDialog type="tasks" @refresh="refresh" :appsData="appsData" />
           <v-text-field
             v-model="search"
             label="Search"
@@ -40,7 +40,12 @@
         </template>
         <template v-slot:[`item.actions`]="{ item }">
           <div class="d-flex flex-row">
-            <EditDialog type="tasks" :data="item" @saved="refresh" />
+            <EditDialog
+              type="tasks"
+              :data="item"
+              :appsData="appsData"
+              @saved="refresh"
+            />
             <v-btn
               @click="handleDelete(item.appId, item.id)"
               variant="plain"
@@ -62,18 +67,24 @@ import CreateDialog from "../../components/dialogs/CreateDialog.vue";
 import { fetchData, deleteItem } from "../../utils/api.js";
 
 const data = ref([]);
+const appsData = ref([]);
 const pending = ref(false);
 const search = ref("");
 const options = ref({
   page: 1,
   pageSize: 5,
 });
+const appsOptions = ref({
+  page: 1,
+  pageSize: 50,
+});
 const totalItemsCount = ref(0);
 const totalPages = ref(0);
-
+const trimTimestamp = (timestamp) => {
+  return timestamp.slice(0, 19).replace("T", " ");
+};
 // Fetch data function
 const refresh = async () => {
-  pending.value = true;
   await fetchData({
     route: "tasks",
     search,
@@ -83,6 +94,18 @@ const refresh = async () => {
       totalItemsCount.value = totalCount;
       totalPages.value = totalPagesCount;
       pending.value = false;
+    },
+  }).catch(() => {
+    toast.error("Error fetching data");
+    pending.value = false;
+  });
+
+  await fetchData({
+    route: "apps",
+    search: ref(""),
+    options: appsOptions,
+    setData: (items) => {
+      appsData.value = items;
     },
   }).catch(() => {
     toast.error("Error fetching data");
