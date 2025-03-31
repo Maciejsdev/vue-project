@@ -77,22 +77,19 @@
 </template>
 
 <script setup>
-import { ref, computed, watchEffect } from "vue";
+import { ref, computed, watchEffect, onMounted } from "vue";
 import { toast } from "vue3-toastify";
-import { useApi } from "../../utils/useApi.js";
+import { apiCall } from "../../utils/api.js";
 
 const props = defineProps({
   type: { type: String, required: true },
+  serversData: { type: Array, required: false, default: () => [] },
 });
 
 const dialog = ref(false);
 const newItem = ref({});
+const pending = ref(false);
 const emit = defineEmits();
-
-const { data: serversData, pending: serversPending } = useApi("servers");
-const { data: appsData, pending: appsPending } = useApi("apps");
-
-const { refresh, createNewItem, data, pending } = useApi(props.type);
 
 const fields = computed(() => {
   const fields = [];
@@ -101,8 +98,7 @@ const fields = computed(() => {
     case "servers":
       fields.push(
         { name: "name", label: "Name*", type: "text", required: true },
-        { name: "description", label: "Description", type: "textarea" },
-        { name: "date", label: "Date*", type: "date", required: true }
+        { name: "description", label: "Description", type: "textarea" }
       );
       break;
     case "apps":
@@ -114,17 +110,14 @@ const fields = computed(() => {
           label: "Server",
           type: "select",
           required: true,
-        },
-        { name: "date", label: "Date", type: "date" }
+        }
       );
       break;
     case "tasks":
       fields.push(
         { name: "name", label: "Task Title*", type: "text", required: true },
         { name: "description", label: "Description", type: "textarea" },
-        { name: "appId", label: "App Id", type: "select" },
-        { name: "serverId", label: "Server Id", type: "select" },
-        { name: "date", label: "Date", type: "date" }
+        { name: "appId", label: "App Id", type: "select" }
       );
       break;
     default:
@@ -159,13 +152,48 @@ watchEffect(() => {
   }
 });
 
+watch(dialog, (val) => {
+  if (!val) {
+    newItem.value = {};
+  }
+});
+
 const handleCreateNewItem = async (newItem) => {
   try {
-    await createNewItem(newItem);
+    const dataToSend = {
+      ...newItem,
+      name: newItem.name.trim(),
+      description: newItem.description.trim(),
+    };
+
+    let endpoint = "";
+    switch (props.type) {
+      case "servers":
+        endpoint = "servers";
+        break;
+      case "apps":
+        if (!newItem.serverId) {
+          throw new Error("Server ID is required for creating an app.");
+        }
+        endpoint = `server/${newItem.serverId}/apps`;
+        break;
+      case "tasks":
+        endpoint = "apps/tasks";
+        break;
+      default:
+        throw new Error("Unknown type");
+    }
+
+    await apiCall({
+      route: endpoint,
+      method: "POST",
+      data: dataToSend,
+    });
+
+    toast.success(`${props.type} created successfully!`, { autoClose: 1000 });
     dialog.value = false;
     newItem.value = {};
     emit("refresh");
-    await refresh();
   } catch (err) {
     console.error("Error creating item:", err);
     toast.error(`Error creating ${props.type}: ${err}`);

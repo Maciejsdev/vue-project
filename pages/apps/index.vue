@@ -1,11 +1,14 @@
 <template>
   <div class="my-6">
     <v-card class="table-card">
-      <!-- Title and Search Input Row -->
       <v-card-title class="d-flex justify-space-between align-center">
         <span>Apps</span>
         <div class="d-flex flex-row align-center">
-          <CreateDialog type="apps" @refresh="refresh" />
+          <CreateDialog
+            type="apps"
+            :serversData="serversData"
+            @refresh="refresh"
+          />
           <v-text-field
             v-model="search"
             label="Search"
@@ -19,76 +22,148 @@
       </v-card-title>
       <v-skeleton-loader v-if="pending" type="table"></v-skeleton-loader>
 
-      <v-data-table
+      <v-data-table-server
         v-else
-        :items="filteredItems"
+        :items="data"
         :loading="pending"
         loading-text="Loading... Please wait"
         class="full"
         :headers="headers"
-        :search="search"
+        :items-length="totalItemsCount"
+        :items-per-page="options.pageSize"
+        :items-per-page-text="'Items per page'"
+        @update:items-per-page="updateItemsPerPage"
+        @update:page="updatePage"
       >
-        <!-- Custom Item (Row) -->
-
-        <template v-slot:item="{ item }">
-          <tr>
-            <td v-for="(value, key) in item" :key="key">
-              <NuxtLink
-                v-if="key === 'name'"
-                :to="`/apps/${item.id}`"
-                class="no-link"
-              >
-                {{ value }}
-              </NuxtLink>
-              <span v-else>{{ value }}</span>
-            </td>
-            <td class="action-column icons">
-              <div class="d-flex flex-row">
-                <EditDialog type="apps" :data="item" @saved="refresh" />
-                <v-btn
-                  @click="deleteItem(item.id)"
-                  variant="plain"
-                  icon="mdi-delete"
-                  class="my-small-btn"
-                ></v-btn>
-              </div>
-            </td>
-          </tr>
+        <template v-slot:[`item.name`]="{ item }">
+          <NuxtLink :to="`/apps/${item.id}`" class="no-link">
+            {{ item.name }}
+          </NuxtLink>
         </template>
-      </v-data-table>
+        <template v-slot:[`item.actions`]="{ item }">
+          <div class="d-flex flex-row">
+            <EditDialog type="apps" :data="item" @saved="refresh" />
+            <v-btn
+              @click="handleDelete(item.serverId, item.id)"
+              variant="plain"
+              icon="mdi-delete"
+              class="my-small-btn"
+            ></v-btn>
+          </div>
+        </template>
+      </v-data-table-server>
     </v-card>
   </div>
 </template>
 
 <script setup>
+import { ref, watch, onMounted } from "vue";
 import { toast } from "vue3-toastify";
 import EditDialog from "../../components/dialogs/EditDialog.vue";
 import CreateDialog from "../../components/dialogs/CreateDialog.vue";
+import { fetchData, deleteItem } from "../../utils/api.js";
 
-const { data, pending, error, deleteItem, refresh } = useApi("apps");
-
+const data = ref([]);
+const pending = ref(false);
 const search = ref("");
+const options = ref({
+  page: 1,
+  pageSize: 5,
+});
+const totalItemsCount = ref(0);
+const totalPages = ref(0);
+const serversData = ref([]);
 
-const filteredItems = computed(() => {
-  if (!search.value) return data.value;
-  return data.value.filter((item) =>
-    Object.values(item).some((val) =>
-      String(val).toLowerCase().includes(search.value.toLowerCase())
-    )
-  );
+// Fetch Data
+const refresh = async () => {
+  pending.value = true;
+  await fetchData({
+    route: "apps",
+    search,
+    options,
+    setData: (items, totalCount, totalPagesCount) => {
+      data.value = items;
+      totalItemsCount.value = totalCount;
+      totalPages.value = totalPagesCount;
+      pending.value = false;
+    },
+  }).catch(() => {
+    toast.error("Error fetching data");
+    pending.value = false;
+  });
+
+  await fetchData({
+    route: "servers",
+    search: ref(""),
+    options: ref({ page: 1, pageSize: 100 }),
+    setData: (items) => {
+      serversData.value = items;
+    },
+  });
+};
+
+// Handle delete
+const handleDelete = async (serverId, appId) => {
+  const fullRoute = `server/${serverId}/apps`;
+
+  await deleteItem({
+    route: fullRoute,
+    id: appId,
+    onSuccess: () => {
+      toast.success("Successfully deleted", { autoClose: 1000 });
+      refresh();
+    },
+  }).catch(() => {
+    toast.error("Error deleting item");
+  });
+};
+
+// Pagination updates
+const updateItemsPerPage = (itemsPerPage) => {
+  options.value.pageSize = itemsPerPage;
+  refresh();
+};
+const updatePage = (page) => {
+  options.value.page = page;
+};
+
+// Debounce function
+function debounce(fn, delay) {
+  let timeoutID;
+  return function (...args) {
+    if (timeoutID) {
+      clearTimeout(timeoutID);
+    }
+    timeoutID = setTimeout(() => {
+      fn(...args);
+    }, delay);
+  };
+}
+
+const getListDebounced = debounce(refresh, 300);
+
+// Watch changes in search & pagination
+watch(
+  [search, options],
+  () => {
+    getListDebounced();
+  },
+  { deep: true }
+);
+
+onMounted(() => {
+  refresh();
 });
 
+// Table headers configuration
 const headers = [
-  { key: "id", title: "id" },
+  { key: "id", title: "ID" },
   { key: "name", title: "Name" },
   { key: "description", title: "Description" },
   { key: "serverId", title: "Server Id" },
-  { key: "date", title: "Date" },
-  {
-    key: "actions",
-    title: "Actions",
-    sortable: false,
-  },
+  { key: "createdAt", title: "Created At" },
+  { key: "updatedAt", title: "Updated At" },
+  { key: "actions", title: "Actions", sortable: false },
 ];
 </script>
 
