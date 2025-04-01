@@ -26,8 +26,9 @@ const apiCall = async ({
     throw error.response ? error.response.data : error;
   }
 };
-
-// Fetch Data (Reusable)
+const capitalize = (str) => {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+};
 const fetchData = async ({ route, search, options, setData }) => {
   try {
     const response = await apiCall({
@@ -35,9 +36,10 @@ const fetchData = async ({ route, search, options, setData }) => {
       method: "GET",
       params: {
         searchPhrase: search.value,
-        pageSize: options.value.pageSize,
-        pageNumber: options.value.page,
-        sortBy: "Name",
+        PageNumber: options.value.page,
+        PageSize: options.value.pageSize,
+        SortBy: options.value.sortBy[0],
+        SortDirection: options.value.sortDesc[0] ? 1 : 0 || [],
       },
     });
 
@@ -67,6 +69,8 @@ const deleteItem = async ({ route, id, onSuccess }) => {
 const updatePagination = ({ newOptions, options, refresh }) => {
   options.value.page = newOptions.page;
   options.value.pageSize = newOptions.itemsPerPage;
+  options.value.sortBy = newOptions.sortBy;
+  options.value.sortDesc = newOptions.sortDesc;
   refresh();
 };
 

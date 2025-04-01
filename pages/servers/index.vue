@@ -1,10 +1,10 @@
 <template>
   <v-card width="100%" class="table-card mx-10 mt-8">
-    <!-- Title and Search Input Row -->
     <v-card-title class="d-flex justify-space-between align-center">
       <span>Servers</span>
       <div class="d-flex flex-row align-center">
-        <CreateDialog type="servers" @saved="refresh" />
+        <v-btn color="primary" @click="exportCsv" :loading="loading">Csv</v-btn>
+        <CreateDialog type="servers" @refresh="refresh" />
         <v-text-field
           v-model="search"
           label="Search"
@@ -17,10 +17,8 @@
       </div>
     </v-card-title>
 
-    <!-- Loading skeleton if pending -->
     <v-skeleton-loader v-if="pending" type="table"></v-skeleton-loader>
 
-    <!-- Data Table with Pagination -->
     <v-data-table-server
       :loading="pending"
       :items="data"
@@ -29,17 +27,14 @@
       :items-per-page="options.pageSize"
       :items-per-page-text="'Ilość na stronie'"
       :no-data-text="'Brak danych'"
-      @update:items-per-page="updateItemsPerPage"
-      @update:page="updatePage"
+      :options="options"
+      @update:options="optionUpdated"
     >
-      <!-- Define custom slot for rendering item names -->
       <template v-slot:[`item.name`]="{ item }">
         <NuxtLink :to="`/servers/${item.id}`" class="no-link">
           {{ item.name }}
         </NuxtLink>
       </template>
-
-      <!-- Define actions (edit and delete) -->
       <template v-slot:[`item.actions`]="{ item }">
         <div class="d-flex flex-row">
           <EditDialog type="servers" :data="item" @saved="refresh" />
@@ -56,11 +51,12 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { ref, watch, onMounted } from "vue";
 import { toast } from "vue3-toastify";
 import EditDialog from "../../components/dialogs/EditDialog.vue";
 import CreateDialog from "../../components/dialogs/CreateDialog.vue";
 import { fetchData, deleteItem } from "~/utils/api";
+import axios from "axios";
 
 const data = ref([]);
 const pending = ref(false);
@@ -68,14 +64,59 @@ const search = ref("");
 const options = ref({
   page: 1,
   pageSize: 5,
+  sortBy: ["Name"],
+  sortDesc: [false],
 });
+
 const totalItemsCount = ref(0);
 const totalPages = ref(0);
+
+const optionUpdated = (noptions) => {
+  let sortKey = noptions.sortBy[0]?.key;
+  if (sortKey) {
+    sortKey = sortKey.charAt(0).toUpperCase() + sortKey.slice(1);
+  }
+  let sortDirection = noptions.sortBy[0]?.order;
+  sortDirection == "asc" ? (sortDirection = false) : (sortDirection = true);
+  options.value = {
+    page: noptions.page,
+    pageSize: noptions.itemsPerPage,
+    sortBy: [sortKey],
+    sortDesc: [sortDirection],
+  };
+
+  refresh();
+};
+
 const trimTimestamp = (timestamp) => {
   return timestamp.slice(0, 19).replace("T", " ");
 };
-// Fetch Data
+
+const exportCsv = async () => {
+  try {
+    const response = await axios.get(`https://localhost:7112/export-csv`, {
+      params: {
+        searchPhrase: search.value,
+        pageSize: -1,
+        pageNumber: 1,
+      },
+      responseType: "blob",
+    });
+
+    const link = document.createElement("a");
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    link.href = url;
+    link.setAttribute("download", "servers_export.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } catch (error) {
+    toast.error("Error exporting CSV");
+  }
+};
+
 const refresh = async () => {
+  pending.value = true;
   await fetchData({
     route: "servers",
     search,
@@ -95,11 +136,11 @@ const refresh = async () => {
     pending.value = false;
   });
 };
+
 onMounted(() => {
   refresh();
 });
 
-// Handle delete
 const handleDelete = async (id) => {
   await deleteItem({
     route: "servers",
@@ -113,14 +154,7 @@ const handleDelete = async (id) => {
   });
 };
 
-// Pagination updates
-const updateItemsPerPage = (itemsPerPage) => {
-  options.value.pageSize = itemsPerPage;
-  refresh();
-};
-const updatePage = (page) => {
-  options.value.page = page;
-};
+// Debounce function to optimize API calls
 function debounce(fn, delay) {
   let timeoutID;
   return function (...args) {
@@ -132,18 +166,16 @@ function debounce(fn, delay) {
     }, delay);
   };
 }
+
 const getListDebounced = debounce(refresh, 300);
 
-// Watch changes in search & pagination
 watch(
-  [search, options],
+  search,
   () => {
     getListDebounced();
   },
   { deep: true }
 );
-
-// Table headers configuration
 const headers = [
   { key: "id", title: "ID" },
   { key: "name", title: "Name" },

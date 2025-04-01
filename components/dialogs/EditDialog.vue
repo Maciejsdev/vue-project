@@ -12,45 +12,49 @@
     <v-card>
       <v-card-title>Edit {{ type }}</v-card-title>
       <v-card-text>
-        <v-form ref="form">
+        <v-form ref="form" v-model="formValid">
           <v-container>
             <v-row v-for="field in fields" :key="field.name">
               <v-col cols="12">
                 <v-text-field
                   v-if="field.type === 'text'"
-                  v-model="trimmedFields[field.name]"
+                  v-model.trim="editedItem[field.name]"
                   :label="field.label"
-                  :rules="field.required ? [(v) => !!v || 'Required'] : []"
+                  :rules="[
+                    (v) => !!v || `${field.label} is required`,
+                    (v) =>
+                      (v && v.length >= (field.minLength || 3)) ||
+                      `${field.label} must be at least ${
+                        field.minLength || 3
+                      } characters`,
+                  ]"
                   required
                 ></v-text-field>
 
                 <v-textarea
                   v-else-if="field.type === 'textarea'"
-                  v-model="trimmedFields[field.name]"
+                  v-model.trim="editedItem[field.name]"
                   :label="field.label"
+                  :rules="[
+                    (v) => !!v || `${field.label} is required`,
+                    (v) =>
+                      (v && v.length >= (field.minLength || 5)) ||
+                      `${field.label} must be at least ${
+                        field.minLength || 5
+                      } characters`,
+                  ]"
                 ></v-textarea>
 
                 <v-select
-                  v-else-if="
-                    field.type === 'select' && field.name === 'serverId'
-                  "
+                  v-else-if="field.type === 'select'"
                   v-model="editedItem[field.name]"
-                  :items="serversData"
+                  :items="field.name === 'serverId' ? serversData : appsData"
                   item-title="name"
                   item-value="id"
                   :label="field.label"
-                  required
-                ></v-select>
-
-                <v-select
-                  v-else-if="field.type === 'select' && field.name === 'appId'"
-                  v-model="editedItem[field.name]"
-                  :items="appsData"
-                  item-title="name"
-                  item-value="id"
-                  :label="field.label"
-                  required
-                ></v-select>
+                  :rules="[(v) => !!v || `${field.label} is required`]"
+                >
+                </v-select>
 
                 <v-text-field
                   v-else-if="field.type === 'date'"
@@ -65,8 +69,10 @@
       </v-card-text>
 
       <v-card-actions>
-        <v-btn @click="dialog = false">Cancel</v-btn>
-        <v-btn color="primary" @click="saveChanges">Save</v-btn>
+        <v-btn @click="closeDialog">Cancel</v-btn>
+        <v-btn color="primary" @click="saveChanges" :disabled="!formValid"
+          >Save</v-btn
+        >
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -76,6 +82,7 @@
 import { ref, computed, watch, defineProps, defineEmits } from "vue";
 import { apiCall } from "../../utils/api.js";
 import { toast } from "vue3-toastify";
+
 const props = defineProps({
   type: { type: String, required: true },
   data: { type: Object, default: () => ({}) },
@@ -84,13 +91,13 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["saved"]);
-
 const dialog = ref(false);
-const editedItem = ref({ ...props.data });
+const formValid = ref(false);
+const editedItem = ref({});
 
 watch(dialog, (val) => {
   if (val) {
-    editedItem.value = { ...props.data };
+    Object.assign(editedItem.value, props.data);
   }
 });
 
@@ -98,19 +105,52 @@ const fields = computed(() => {
   switch (props.type) {
     case "servers":
       return [
-        { name: "name", label: "Name*", type: "text", required: true },
-        { name: "description", label: "Description", type: "textarea" },
+        {
+          name: "name",
+          label: "Name*",
+          type: "text",
+          required: true,
+          minLength: 3,
+        },
+        {
+          name: "description",
+          label: "Description",
+          type: "textarea",
+          minLength: 5,
+        },
       ];
     case "apps":
       return [
-        { name: "name", label: "App Name*", type: "text", required: true },
-        { name: "description", label: "Description", type: "textarea" },
+        {
+          name: "name",
+          label: "App Name*",
+          type: "text",
+          required: true,
+          minLength: 3,
+        },
+        {
+          name: "description",
+          label: "Description",
+          type: "textarea",
+          minLength: 5,
+        },
         { name: "serverId", label: "Server", type: "select" },
       ];
     case "tasks":
       return [
-        { name: "name", label: "Task Title*", type: "text", required: true },
-        { name: "description", label: "Description", type: "textarea" },
+        {
+          name: "name",
+          label: "Task Title*",
+          type: "text",
+          required: true,
+          minLength: 3,
+        },
+        {
+          name: "description",
+          label: "Description",
+          type: "textarea",
+          minLength: 5,
+        },
         { name: "appId", label: "App", type: "select" },
       ];
     default:
@@ -118,53 +158,35 @@ const fields = computed(() => {
   }
 });
 
-const trimmedFields = computed(() => {
-  const trimmed = {};
-  for (const field of fields.value) {
-    const value = editedItem.value[field.name];
-    trimmed[field.name] =
-      typeof value === "string" ? value.trim() : value || "";
-  }
-  return trimmed;
-});
-
 const saveChanges = async () => {
   try {
     let endpoint = "";
-    const dataToSend = {
-      name: trimmedFields.value.name,
-      description: trimmedFields.value.description,
-    };
+    const dataToSend = { ...editedItem.value };
+
+    Object.keys(dataToSend).forEach((key) => {
+      if (typeof dataToSend[key] === "string") {
+        dataToSend[key] = dataToSend[key].trim();
+      }
+    });
 
     switch (props.type) {
       case "servers":
         endpoint = `servers/${editedItem.value.id}`;
         break;
-
       case "apps":
-        if (!editedItem.value.serverId) {
-          throw new Error("Server ID is required to update the app.");
-        }
+        if (!editedItem.value.serverId)
+          throw new Error("Server ID is required.");
         endpoint = `server/${editedItem.value.serverId}/apps/${editedItem.value.id}`;
         break;
-
       case "tasks":
-        if (!editedItem.value.appId) {
-          throw new Error("App ID is required to update the task.");
-        }
+        if (!editedItem.value.appId) throw new Error("App ID is required.");
         endpoint = `apps/${editedItem.value.appId}/tasks/${editedItem.value.id}`;
         break;
-
       default:
         throw new Error("Unknown type for update.");
     }
 
-    await apiCall({
-      route: endpoint,
-      method: "PATCH",
-      data: dataToSend,
-    });
-
+    await apiCall({ route: endpoint, method: "PATCH", data: dataToSend });
     toast.success(
       `${
         props.type.charAt(0).toUpperCase() + props.type.slice(1)
@@ -178,6 +200,7 @@ const saveChanges = async () => {
     console.error("Error updating item:", err);
   }
 };
+
 const closeDialog = () => {
   dialog.value = false;
   editedItem.value = {};

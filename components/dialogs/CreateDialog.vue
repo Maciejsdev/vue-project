@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="dialog" max-width="500px">
+  <v-dialog v-model="dialog" max-width="500px" @update:modelValue="resetForm">
     <template v-slot:activator="{ props }">
       <v-btn
         v-bind="props"
@@ -12,54 +12,48 @@
     <v-card>
       <v-card-title>Create New {{ type }}</v-card-title>
       <v-card-text>
-        <v-form ref="form">
+        <v-form v-model="formValid">
           <v-container>
             <v-row v-for="field in fields" :key="field.name">
               <v-col cols="12">
                 <v-text-field
                   v-if="field.type === 'text'"
-                  v-model="newItem[field.name]"
+                  v-model.trim="newItem[field.name]"
                   :label="field.label"
-                  :rules="field.required ? [(v) => !!v || 'Required'] : []"
+                  :rules="[
+                    (v) => !!v || `${field.label} is required`,
+                    (v) =>
+                      (v && v.length >= 3) ||
+                      `${field.label} must be at least 3 characters`,
+                  ]"
                   required
                 ></v-text-field>
 
                 <v-textarea
                   v-else-if="field.type === 'textarea'"
-                  v-model="newItem[field.name]"
+                  v-model.trim="newItem[field.name]"
                   :label="field.label"
+                  :rules="[
+                    (v) => !!v || `${field.label} is required`,
+                    (v) =>
+                      (v && v.length >= 5) ||
+                      `${field.label} must be at least 5 characters`,
+                  ]"
+                  required
                 ></v-textarea>
 
                 <v-select
-                  v-else-if="field.name === 'serverId'"
+                  v-else-if="field.type === 'select'"
                   v-model="newItem[field.name]"
                   :label="field.label"
-                  :items="serversData"
+                  :items="field.name === 'serverId' ? serversData : appsData"
                   item-value="id"
                   item-title="name"
+                  :rules="[(v) => !!v || `${field.label} is required`]"
                   required
-                  :loading="pending"
-                  placeholder="Select a server"
+                  :loading="field.name === 'serverId' ? pending : false"
+                  placeholder="Select an option"
                 />
-
-                <v-select
-                  v-else-if="field.name === 'appId'"
-                  v-model="newItem[field.name]"
-                  :label="field.label"
-                  :items="appsData"
-                  item-value="id"
-                  item-title="name"
-                  required
-                  :loading="false"
-                  placeholder="Select an app"
-                />
-
-                <v-text-field
-                  v-else-if="field.type === 'date'"
-                  v-model="newItem[field.name]"
-                  type="date"
-                  :label="field.label"
-                ></v-text-field>
               </v-col>
             </v-row>
           </v-container>
@@ -67,105 +61,92 @@
       </v-card-text>
 
       <v-card-actions>
-        <v-btn @click="dialog = false">Cancel</v-btn>
-        <v-btn color="primary" @click="handleCreateNewItem(newItem)">
-          Create
-        </v-btn>
+        <v-btn @click="closeDialog">Cancel</v-btn>
+        <v-btn
+          color="primary"
+          @click="handleCreateNewItem"
+          :disabled="!formValid"
+          :loading="loading"
+          >Create</v-btn
+        >
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
 
 <script setup>
-import { ref, computed, watchEffect, onMounted } from "vue";
+import { ref, computed } from "vue";
 import { toast } from "vue3-toastify";
 import { apiCall } from "../../utils/api.js";
 
 const props = defineProps({
   type: { type: String, required: true },
-  serversData: { type: Array, required: false, default: () => [] },
-  appsData: { type: Array, required: false, default: () => [] },
+  serversData: { type: Array, default: () => [] },
+  appsData: { type: Array, default: () => [] },
 });
-
+const formValid = ref(false);
 const dialog = ref(false);
 const newItem = ref({});
+const loading = ref(false);
 const pending = ref(false);
 const emit = defineEmits();
 
-const fields = computed(() => {
-  const fields = [];
-
-  switch (props.type) {
-    case "servers":
-      fields.push(
-        { name: "name", label: "Name*", type: "text", required: true },
-        { name: "description", label: "Description", type: "textarea" }
-      );
-      break;
-    case "apps":
-      fields.push(
-        { name: "name", label: "App Name*", type: "text", required: true },
-        { name: "description", label: "Description", type: "textarea" },
-        {
-          name: "serverId",
-          label: "Server",
-          type: "select",
-          required: true,
-        }
-      );
-      break;
-    case "tasks":
-      fields.push(
-        { name: "name", label: "Task Title*", type: "text", required: true },
-        { name: "description", label: "Description", type: "textarea" },
-        { name: "appId", label: "App Id", type: "select" }
-      );
-      break;
-    default:
-      break;
-  }
-
-  return fields;
-});
-
-watchEffect(() => {
+const resetForm = () => {
   newItem.value = {};
+};
 
+const closeDialog = () => {
+  dialog.value = false;
+  resetForm();
+};
+
+const fields = computed(() => {
   switch (props.type) {
     case "servers":
-      newItem.value = { name: "", description: "", date: null };
-      break;
+      return [
+        { name: "name", label: "Name", type: "text", required: true },
+        {
+          name: "description",
+          label: "Description",
+          type: "textarea",
+          required: true,
+        },
+      ];
     case "apps":
-      newItem.value = { name: "", description: "", serverId: null, date: null };
-      break;
+      return [
+        { name: "name", label: "App Name", type: "text", required: true },
+        {
+          name: "description",
+          label: "Description",
+          type: "textarea",
+          required: true,
+        },
+        { name: "serverId", label: "Server", type: "select", required: true },
+      ];
     case "tasks":
-      newItem.value = {
-        name: "",
-        description: "",
-        status: "Pending",
-        appId: null,
-        serverId: null,
-        date: null,
-      };
-      break;
+      return [
+        { name: "name", label: "Task Title", type: "text", required: true },
+        {
+          name: "description",
+          label: "Description",
+          type: "textarea",
+          required: true,
+        },
+        { name: "appId", label: "App Id", type: "select", required: true },
+      ];
     default:
-      break;
+      return [];
   }
 });
 
-watch(dialog, (val) => {
-  if (!val) {
-    newItem.value = {};
-  }
-});
-
-const handleCreateNewItem = async (newItem) => {
+const handleCreateNewItem = async () => {
   try {
-    const dataToSend = {
-      ...newItem,
-      name: newItem.name.trim(),
-      description: newItem.description.trim(),
-    };
+    const dataToSend = Object.fromEntries(
+      Object.entries(newItem.value).map(([key, value]) => [
+        key,
+        typeof value === "string" ? value.trim() : value,
+      ])
+    );
 
     let endpoint = "";
     switch (props.type) {
@@ -173,31 +154,28 @@ const handleCreateNewItem = async (newItem) => {
         endpoint = "servers";
         break;
       case "apps":
-        if (!newItem.serverId) {
-          throw new Error("Server ID is required for creating an app.");
-        }
-        endpoint = `server/${newItem.serverId}/apps`;
+        endpoint = `server/${newItem.value.serverId}/apps`;
         break;
       case "tasks":
-        endpoint = `apps/${newItem.appId}/tasks`;
+        endpoint = `apps/${newItem.value.appId}/tasks`;
         break;
       default:
         throw new Error("Unknown type");
     }
-
+    loading.value = true;
     await apiCall({
       route: endpoint,
       method: "POST",
       data: dataToSend,
     });
 
+    loading.vlaue = false;
+
     toast.success(`${props.type} created successfully!`, { autoClose: 1000 });
-    dialog.value = false;
-    newItem.value = {};
-    emit("refresh");
+    closeDialog();
   } catch (err) {
     console.error("Error creating item:", err);
-    toast.error(`Error creating ${props.type}: ${err}`);
+    toast.error(`Error creating ${props.type}: ${err.message}`);
   }
 };
 </script>
