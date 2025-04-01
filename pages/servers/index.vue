@@ -20,6 +20,7 @@
     <v-skeleton-loader v-if="pending" type="table"></v-skeleton-loader>
 
     <v-data-table-server
+      class="full"
       :loading="pending"
       :items="data"
       :headers="headers"
@@ -84,8 +85,6 @@ const optionUpdated = (noptions) => {
     sortBy: [sortKey],
     sortDesc: [sortDirection],
   };
-
-  refresh();
 };
 
 const trimTimestamp = (timestamp) => {
@@ -154,7 +153,6 @@ const handleDelete = async (id) => {
   });
 };
 
-// Debounce function to optimize API calls
 function debounce(fn, delay) {
   let timeoutID;
   return function (...args) {
@@ -170,7 +168,7 @@ function debounce(fn, delay) {
 const getListDebounced = debounce(refresh, 300);
 
 watch(
-  search,
+  [search, options],
   () => {
     getListDebounced();
   },

@@ -26,9 +26,7 @@ const apiCall = async ({
     throw error.response ? error.response.data : error;
   }
 };
-const capitalize = (str) => {
-  return str.charAt(0).toUpperCase() + str.slice(1);
-};
+
 const fetchData = async ({ route, search, options, setData }) => {
   try {
     const response = await apiCall({
