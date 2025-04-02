@@ -66,7 +66,6 @@
           color="primary"
           @click="handleCreateNewItem"
           :disabled="!formValid"
-          :loading="loading"
           >Create</v-btn
         >
       </v-card-actions>
@@ -172,6 +171,7 @@ const handleCreateNewItem = async () => {
     loading.vlaue = false;
 
     toast.success(`${props.type} created successfully!`, { autoClose: 1000 });
+    emit("refresh");
     closeDialog();
   } catch (err) {
     console.error("Error creating item:", err);

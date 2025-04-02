@@ -30,9 +30,7 @@
       @update:options="optionUpdated"
     >
       <template v-slot:[`item.name`]="{ item }">
-        <NuxtLink :to="`/tasks/${item.id}`" class="no-link">
-          {{ item.name }}
-        </NuxtLink>
+        {{ item.name }}
       </template>
       <template v-slot:[`item.actions`]="{ item }">
         <div class="d-flex flex-row">

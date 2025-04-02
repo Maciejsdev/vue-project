@@ -17,7 +17,7 @@
       </div>
     </v-card-title>
 
-    <v-skeleton-loader v-if="pending" type="table"></v-skeleton-loader>
+    <v-skeleton-loader v-if="pending2" type="table"></v-skeleton-loader>
 
     <v-data-table-server
       class="full"
@@ -32,9 +32,7 @@
       @update:options="optionUpdated"
     >
       <template v-slot:[`item.name`]="{ item }">
-        <NuxtLink :to="`/servers/${item.id}`" class="no-link">
-          {{ item.name }}
-        </NuxtLink>
+        {{ item.name }}
       </template>
       <template v-slot:[`item.actions`]="{ item }">
         <div class="d-flex flex-row">
@@ -61,6 +59,7 @@ import axios from "axios";
 
 const data = ref([]);
 const pending = ref(false);
+const pending2 = ref(false);
 const search = ref("");
 const options = ref({
   page: 1,
@@ -115,25 +114,28 @@ const exportCsv = async () => {
 };
 
 const refresh = async () => {
-  pending.value = true;
-  await fetchData({
-    route: "servers",
-    search,
-    options,
-    setData: (items, totalCount, totalPagesCount) => {
-      data.value = items.map((item) => ({
-        ...item,
-        updatedAt: trimTimestamp(item.updatedAt),
-        createdAt: trimTimestamp(item.createdAt),
-      }));
-      totalItemsCount.value = totalCount;
-      totalPages.value = totalPagesCount;
+  if (data != []) {
+    pending.value = true;
+    await fetchData({
+      route: "servers",
+      search,
+      options,
+      setData: (items, totalCount, totalPagesCount) => {
+        data.value = items.map((item) => ({
+          ...item,
+          updatedAt: trimTimestamp(item.updatedAt),
+          createdAt: trimTimestamp(item.createdAt),
+        }));
+        totalItemsCount.value = totalCount;
+        totalPages.value = totalPagesCount;
+        pending.value = false;
+      },
+    }).catch(() => {
+      toast.error("Error fetching data");
       pending.value = false;
-    },
-  }).catch(() => {
-    toast.error("Error fetching data");
-    pending.value = false;
-  });
+    });
+  }
+  pending2 = true;
 };
 
 onMounted(() => {
