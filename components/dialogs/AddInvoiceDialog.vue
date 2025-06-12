@@ -93,7 +93,7 @@
 <script setup>
 import { ref, reactive, watch } from "vue";
 import { apiCall } from "~/utils/api.js";
-
+import { toast } from "vue3-toastify";
 const props = defineProps({
   modelValue: Boolean,
 });
@@ -135,7 +135,7 @@ watch(pdfFile, (file) => {
 
 const handleSubmit = async () => {
   if (!pdfFile.value || !(pdfFile.value instanceof File)) {
-    alert("Załącz plik PDF.");
+    toast.error("Załącz plik PDF.");
     return;
   }
 
@@ -161,7 +161,7 @@ const handleSubmit = async () => {
     isOpen.value = false;
   } catch (error) {
     console.error("Błąd zapisu faktury:", error);
-    alert("Nie udało się zapisać faktury.");
+    toast.error("Nie udało się zapisać faktury.");
   }
 };
 

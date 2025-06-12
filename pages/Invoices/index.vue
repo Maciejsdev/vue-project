@@ -12,6 +12,7 @@
           <v-list-item-subtitle>
             Data: {{ new Date(invoice.invoiceDate).toLocaleDateString() }}
           </v-list-item-subtitle>
+          <v-icon @click="goToInvoice(invoice.id)" icon="mdi-eye" />
         </v-list-item-content>
       </v-list-item>
     </v-list>
@@ -23,6 +24,11 @@
 import { ref, onMounted } from "vue";
 import { apiCall } from "~/utils/api.js"; // zakładam że masz to zdefiniowane
 import AddInvoiceDialog from "./components/dialogs/AddInvoiceDialog.vue";
+
+const router = useRouter();
+const goToInvoice = (id) => {
+  router.push(`/invoices/${id}`);
+};
 
 const invoices = ref([]);
 const showModal = ref(false);
