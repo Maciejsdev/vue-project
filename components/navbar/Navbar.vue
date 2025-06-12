@@ -22,6 +22,9 @@
               <v-list-item to="/tasks">
                 <v-list-item-title>Tasks</v-list-item-title>
               </v-list-item>
+              <v-list-item to="/invoices">
+                <v-list-item-title>Invoices</v-list-item-title>
+              </v-list-item>
             </v-list>
           </v-menu>
         </template>

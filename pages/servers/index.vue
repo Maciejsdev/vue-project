@@ -1,9 +1,36 @@
 <template>
   <v-card width="100%" class="table-card mx-10 mt-8">
+    <div v-show="showImportFile" class="dropzone">
+      <v-file-upload
+        density="compact"
+        variant="cinoact"
+        browse-text="Local Filesystem"
+        divider-text="or choose locally"
+        icon="mdi-upload"
+        title="Drag and Drop Here"
+      ></v-file-upload>
+      <div class="pa-4">
+        <v-btn
+          color="primary"
+          variant="outlined"
+          icon="mdi-import"
+          @click="handleFileUpload"
+        ></v-btn>
+      </div>
+    </div>
     <v-card-title class="d-flex justify-space-between align-center">
       <span>Servers</span>
       <div class="d-flex flex-row align-center">
-        <v-btn color="primary" @click="exportCsv" :loading="loading">Csv</v-btn>
+        <v-row gap="2">
+          <v-col>
+            <v-btn color="primary" @click="toggleImport">Import</v-btn>
+          </v-col>
+          <v-col>
+            <v-btn color="primary" @click="exportCsv" :loading="loading"
+              >Csv</v-btn
+            >
+          </v-col>
+        </v-row>
         <CreateDialog type="servers" @refresh="refresh" />
         <v-text-field
           v-model="search"
@@ -56,6 +83,7 @@ import EditDialog from "../../components/dialogs/EditDialog.vue";
 import CreateDialog from "../../components/dialogs/CreateDialog.vue";
 import { fetchData, deleteItem } from "~/utils/api";
 import axios from "axios";
+import { VFileUpload } from "vuetify/labs/VFileUpload";
 
 const data = ref([]);
 const pending = ref(false);
@@ -67,6 +95,8 @@ const options = ref({
   sortBy: ["Name"],
   sortDesc: [false],
 });
+const showImportFile = ref(false);
+const FileToImport = ref(null);
 
 const totalItemsCount = ref(0);
 const totalPages = ref(0);
@@ -84,6 +114,32 @@ const optionUpdated = (noptions) => {
     sortBy: [sortKey],
     sortDesc: [sortDirection],
   };
+};
+const toggleImport = () => {
+  showImportFile.value = !showImportFile.value;
+  console.log(showImportFile.value);
+};
+
+const handleFileUpload = async (file) => {
+  if (!file) return;
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+    const response = await axios.post(
+      `https://localhost:7112/import-csv`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    toast.success("File imported successfully");
+    showImportFile.value = false;
+    refresh();
+  } catch (error) {
+    toast.error("Error importing file");
+  }
 };
 
 const trimTimestamp = (timestamp) => {
