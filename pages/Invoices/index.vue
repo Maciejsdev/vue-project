@@ -22,7 +22,7 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import { apiCall } from "~/utils/api.js"; // zakładam że masz to zdefiniowane
+import { apiCall } from "~/utils/api.js";
 import AddInvoiceDialog from "./components/dialogs/AddInvoiceDialog.vue";
 
 const router = useRouter();
@@ -34,7 +34,7 @@ const invoices = ref([]);
 const showModal = ref(false);
 const loadInvoices = async () => {
   try {
-    invoices.value = await apiCall({ route: "invoices" }); // GET /api/invoices
+    invoices.value = await apiCall({ route: "invoices" });
   } catch (err) {
     console.error("Błąd ładowania faktur", err);
   }

@@ -70,7 +70,7 @@ onMounted(async () => {
     invoice.value = data;
 
     if (data.attachments?.length) {
-      selectedAttachmentId.value = data.attachments[0].id; // domyślnie pierwszy
+      selectedAttachmentId.value = data.attachments[0].id;
     }
   } catch (error) {
     console.error("Błąd API:", error);
