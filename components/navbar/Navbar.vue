@@ -13,7 +13,7 @@
               <v-list-item to="/">
                 <v-list-item-title>Home</v-list-item-title>
               </v-list-item>
-              <v-list-item to="/apps">
+              <!-- <v-list-item to="/apps">
                 <v-list-item-title>Apps</v-list-item-title>
               </v-list-item>
               <v-list-item to="/servers">
@@ -21,9 +21,12 @@
               </v-list-item>
               <v-list-item to="/tasks">
                 <v-list-item-title>Tasks</v-list-item-title>
-              </v-list-item>
+              </v-list-item> -->
               <v-list-item to="/invoices">
                 <v-list-item-title>Invoices</v-list-item-title>
+              </v-list-item>
+              <v-list-item to="/mails">
+                <v-list-item-title>Mails</v-list-item-title>
               </v-list-item>
             </v-list>
           </v-menu>
