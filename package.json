@@ -11,6 +11,8 @@
     "server": "json-server --watch db.json --port 4000"
   },
   "dependencies": {
+    "@wangeditor/editor": "^5.1.23",
+    "@wangeditor/editor-for-vue": "^5.1.12",
     "apexcharts": "^4.7.0",
     "axios": "^1.8.4",
     "json-server": "^1.0.0-beta.3",

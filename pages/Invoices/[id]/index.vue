@@ -34,7 +34,7 @@
           style="height: 80vh; border: 1px solid #ccc"
         >
           <embed
-            :src="`http://localhost:5079/attachment/inline/${selectedAttachmentId}`"
+            :src="`https://localhost:5001/attachment/inline/${selectedAttachmentId}`"
             type="application/pdf"
             width="100%"
             height="100%"

@@ -28,6 +28,12 @@
               <v-list-item to="/mails">
                 <v-list-item-title>Mails</v-list-item-title>
               </v-list-item>
+              <v-list-item to="/sftp">
+                <v-list-item-title>sftp</v-list-item-title>
+              </v-list-item>
+              <v-list-item to="/pdf">
+                <v-list-item-title>pdf gen</v-list-item-title>
+              </v-list-item>
             </v-list>
           </v-menu>
         </template>

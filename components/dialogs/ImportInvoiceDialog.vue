@@ -70,7 +70,7 @@ const uploadFile = async () => {
 
   loading.value = true;
   try {
-    await axios.post("http://localhost:5079/api/invoices/import", formData, {
+    await axios.post("https://localhost:5001/api/invoices/import", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
