@@ -39,8 +39,11 @@
       </template>
 
       <template #item.actions="{ item }">
-        <v-btn icon @click="goToInvoice(item.id)">
+        <v-btn icon @click="goToInvoice(item.id)" title="Podgląd">
           <v-icon>mdi-eye</v-icon>
+        </v-btn>
+        <v-btn icon @click="generateInvoicePdf(item)" title="Pobierz PDF">
+          <v-icon>mdi-file-pdf-box</v-icon>
         </v-btn>
       </template>
 
@@ -130,6 +133,58 @@ const goToInvoice = (id) => {
 const formatDate = (dateStr) => {
   const date = new Date(dateStr);
   return date.toLocaleDateString("pl-PL");
+};
+const generateInvoicePdf = async (invoice) => {
+  const profileId = "00000000-0000-0000-0000-000000000001";
+  const referenceNumber = crypto.randomUUID(); // lub invoice.id
+
+  const payload = {
+    profileId,
+    documentReferenceNumber: referenceNumber,
+    templateName: "Szablon faktury",
+    templateVersion: 2,
+    data: [
+      { key: "invoiceNumber", value: invoice.invoiceNumber },
+      { key: "invoiceDate", value: invoice.invoiceDate },
+      { key: "netAmount", value: invoice.netAmount?.toString() ?? "0" },
+      { key: "vatAmount", value: invoice.vatAmount?.toString() ?? "0" },
+      { key: "totalAmount", value: invoice.totalAmount?.toString() ?? "0" },
+      { key: "createdAt", value: new Date().toISOString() },
+    ],
+  };
+
+  try {
+    // 🔁 1. Wysłanie żądania tworzącego dokument
+    const resPost = await fetch(
+      `https://localhost:5001/docgenpdf/profiles/${profileId}/documents`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    if (!resPost.ok) throw new Error("Błąd podczas POST PDF");
+
+    // 🔁 2. Pobranie gotowego PDF jako binarki
+    const resGet = await fetch(
+      `https://localhost:5001/docgenpdf/profiles/${profileId}/documents/${referenceNumber}`
+    );
+
+    if (!resGet.ok) throw new Error("Błąd podczas GET PDF");
+
+    const blob = await resGet.blob();
+
+    // 📦 Wyświetlenie / pobranie
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${invoice.invoiceNumber || "faktura"}.pdf`;
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error("Błąd generowania lub pobierania PDF:", err);
+  }
 };
 
 onMounted(async () => {

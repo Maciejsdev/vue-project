@@ -51,16 +51,32 @@ const registerButton = (key, label, templateValue) => {
 // Global guard for hot-reloading in development
 if (!window.wangEditorCustomMenusRegistered) {
   console.log("Registering custom WangEditor menus...");
-  registerButton("insertMyText", "Insert Text", "Hello, WangEditor 5!");
-  registerButton("insert-invoice-number", "Invoice #", "{{ invoiceNumber }}");
-  registerButton("insert-vat-id", "VAT ID", "{{ vatId }}");
-  registerButton(
-    "insert-date",
-    "Date",
-    () => `{{ ${new Date().toISOString().split("T")[0]} }}`
-  );
-  registerButton("insert-seller", "Seller", "{{ sellerName }}");
-  registerButton("insert-buyer", "Buyer", "{{ buyerName }}");
+
+  const invoiceFields = [
+    {
+      key: "insert-invoice-number",
+      label: "Invoice #",
+      value: "{{invoiceNumber}}",
+    },
+    {
+      key: "insert-invoice-date",
+      label: "Invoice date",
+      value: "{{invoiceDate}}",
+    },
+    { key: "insert-net-amount", label: "Netto (zł)", value: "{{netAmount}}" },
+    { key: "insert-vat-amount", label: "VAT (zł)", value: "{{vatAmount}}" },
+    {
+      key: "insert-total-amount",
+      label: "Brutto (zł)",
+      value: "{{totalAmount}}",
+    },
+    { key: "insert-created-at", label: "Created at", value: "{{createdAt}}" },
+  ];
+
+  for (const { key, label, value } of invoiceFields) {
+    registerButton(key, label, value);
+  }
+
   window.wangEditorCustomMenusRegistered = true;
   console.log("Custom WangEditor menus registered.");
 }
@@ -104,11 +120,12 @@ export default {
         "insertLink",
         "insertImage",
         "|",
-        "insert-invoice-number", // Your button
-        "insert-vat-id", // Your button
-        "insert-date", // Your button
-        "insert-seller", // Your button
-        "insert-buyer", // Your button
+        "insert-invoice-number",
+        "insert-invoice-date",
+        "insert-net-amount",
+        "insert-vat-amount",
+        "insert-total-amount",
+        "insert-created-at",
         "|",
         "undo",
         "redo",
