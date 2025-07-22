@@ -1,7 +1,8 @@
 <template>
   <v-dialog v-model="visible" max-width="500">
-    <v-card v-if="item && item.rawImportReport" class="dense-card">
+    <v-card v-if="item?.rawImportReport" class="dense-card">
       <v-card-title>File: {{ item.filename }}</v-card-title>
+
       <v-card-text>
         <v-alert
           v-if="item.rawImportReport.allOk"
@@ -13,10 +14,7 @@
           File imported successfully.
         </v-alert>
         <v-alert
-          v-if="
-            !item.rawImportReport.allOk &&
-            !item.rawImportReport.shouldEndProcessing
-          "
+          v-else-if="!item.rawImportReport.shouldEndProcessing"
           dense
           outlined
           type="warning"
@@ -24,13 +22,7 @@
         >
           File imported with some warnings.
         </v-alert>
-        <v-alert
-          v-if="item.rawImportReport.shouldEndProcessing"
-          dense
-          outlined
-          type="error"
-          border="left"
-        >
+        <v-alert v-else dense outlined type="error" border="left">
           Import failed due to critical issues.
         </v-alert>
 
@@ -77,10 +69,10 @@
         >
           <template #default="{ item, index }">
             <div
-              :class="
-                'problem-item text-truncate text-caption ' +
-                (item.description[0] === '!' ? 'critical--text' : '')
-              "
+              :class="[
+                'problem-item text-truncate text-caption',
+                item.description?.startsWith('!') ? 'critical--text' : '',
+              ]"
             >
               {{ index + 1 }}.
               {{
@@ -88,7 +80,7 @@
               }}
               {{ item.description }}
 
-              <b v-if="item.description[0] === '!'">
+              <b v-if="item.description?.startsWith('!')">
                 &nbsp;&nbsp;&nbsp;&nbsp; Row rejected: {{ item.row }}
               </b>
             </div>
@@ -97,7 +89,7 @@
       </v-card-text>
 
       <v-card-actions>
-        <v-spacer></v-spacer>
+        <v-spacer />
         <v-btn color="primary" @click="visible = false">Ok</v-btn>
       </v-card-actions>
     </v-card>
@@ -105,30 +97,40 @@
 </template>
 
 <script setup>
-import { ref, watch, defineProps, defineEmits } from "vue";
+import { ref, watch, computed, defineProps, defineEmits } from "vue";
 
 const props = defineProps({
-  itemModel: { type: Object, required: true },
-  value: { type: Boolean, required: true },
+  item: { type: Object, required: true },
+  modelValue: { type: Boolean, required: true },
+});
+const emit = defineEmits(["update:modelValue"]);
+
+const visible = computed({
+  get: () => props.modelValue,
+  set: (val) => emit("update:modelValue", val),
 });
 
-const emit = defineEmits(["input"]);
-const visible = ref(false);
 const item = ref(null);
 const issuesLoaded = ref(false);
 
 watch(
-  () => props.value,
+  () => props.modelValue,
   async (val) => {
-    visible.value = val;
-    emit("input", val);
-    if (val) {
-      item.value = props.itemModel;
-      const fetchedItem = await $fetch(`/api/imports/${item.value.id}`);
-      item.value.rawImportReport.issues =
-        fetchedItem.rawImportReport.issues.sort((a, b) =>
-          a.description[0] === "!" ? -1 : 1
-        );
+    if (!val) return;
+    issuesLoaded.value = false;
+    item.value = { ...props.item };
+
+    try {
+      const fetched = await $fetch(
+        `https://localhost:5001/api/imports/${item.value.id}`
+      );
+      item.value.rawImportReport.issues = (
+        fetched.rawImportReport.issues ?? []
+      ).sort((a, b) => (a.description?.startsWith("!") ? -1 : 1));
+    } catch (err) {
+      console.error("Failed to fetch report:", err);
+      item.value.rawImportReport.issues = [];
+    } finally {
       issuesLoaded.value = true;
     }
   },
@@ -136,7 +138,7 @@ watch(
 );
 </script>
 
-<style lang="scss" scoped>
+<style scoped lang="scss">
 .dense-card .v-card__text {
   padding-top: 4px !important;
   padding-bottom: 4px !important;
