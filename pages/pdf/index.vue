@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container width="100%">
     <v-card>
       <client-only>
         <WangEditor v-model="htmlContent" />
@@ -24,17 +24,17 @@ const WangEditor = defineAsyncComponent(() =>
 
 const htmlContent = ref("");
 
-// 🔎 Wyciąga unikalne klucze {{ ... }} z HTML-a
+// Wyciąga unikalne klucze {{ ... }} z HTML-a
 function extractPlaceholders(html) {
   const matches = [...html.matchAll(/{{\s*(.*?)\s*}}/g)];
   return [...new Set(matches.map((m) => m[1]))];
 }
 
-// 🔁 1. Generowanie szablonu (zapis do bazy, np. admin preview)
+// 1. Generowanie szablonu (zapis do bazy, np. admin preview)
 async function generatePdf() {
   const payload = {
     profileId: "00000000-0000-0000-0000-000000000001",
-    templateId: "C4696A08-78E7-44BF-FD57-08DDC503B6B8",
+    templateId: "147F2576-8B3D-4873-84F0-08DDC4638337",
     templateName: "Szablon faktury",
     templateContent: htmlContent.value,
     placeholders: extractPlaceholders(htmlContent.value),

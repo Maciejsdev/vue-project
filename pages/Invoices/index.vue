@@ -142,7 +142,7 @@ const generateInvoicePdf = async (invoice) => {
     profileId,
     documentReferenceNumber: referenceNumber,
     templateName: "Szablon faktury",
-    templateVersion: 2,
+    templateVersion: 3,
     data: [
       { key: "invoiceNumber", value: invoice.invoiceNumber },
       { key: "invoiceDate", value: invoice.invoiceDate },

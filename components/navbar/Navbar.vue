@@ -34,6 +34,12 @@
               <v-list-item to="/pdf">
                 <v-list-item-title>pdf gen</v-list-item-title>
               </v-list-item>
+              <v-list-item to="/autenti">
+                <v-list-item-title>Autenti</v-list-item-title>
+              </v-list-item>
+              <v-list-item to="/imports">
+                <v-list-item-title>Imports</v-list-item-title>
+              </v-list-item>
             </v-list>
           </v-menu>
         </template>

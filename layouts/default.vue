@@ -5,7 +5,7 @@
         <Navbar />
       </div>
 
-      <div class="main-wrapper d-flex justify-center">
+      <div class="main-wrapper d-flex justify-center w-full" min-width="1600px">
         <slot />
       </div>
     </v-app>
